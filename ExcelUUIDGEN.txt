@@ -1,0 +1,33 @@
+use AppleScript version "2.4"
+use scripting additions
+use framework "Foundation"
+
+-- The URL to your local server
+set serverUrl to "http://localhost:4500/uuid?count=1000"
+
+-- Create the NSURLRequest
+set theURL to current application's NSURL's URLWithString:serverUrl
+set theRequest to current application's NSURLRequest's requestWithURL:theURL
+
+-- Send the request and get the response
+set theData to current application's NSURLConnection's sendSynchronousRequest:theRequest returningResponse:(missing value) |error|:(missing value)
+
+-- Convert the response data to text
+set theText to current application's NSString's alloc()'s initWithData:theData encoding:(current application's NSUTF8StringEncoding)
+
+-- Parse the JSON response
+set theResponse to current application's NSJSONSerialization's JSONObjectWithData:theData options:0 |error|:(missing value)
+
+-- Get the array of UUIDs from the response
+set theIds to theResponse's objectForKey:"ids"
+
+-- Start Excel and get the active sheet
+tell application "Microsoft Excel"
+	activate
+	set theWorksheet to active sheet of active workbook
+	
+	-- Insert the UUIDs into the first column of the sheet
+	repeat with i from 1 to count of theIds
+		set value of cell i of column 1 of theWorksheet to ((theIds's objectAtIndex:(i - 1)) as text)
+	end repeat
+end tell
